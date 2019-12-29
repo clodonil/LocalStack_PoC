@@ -33,12 +33,12 @@ Localstack utiliza a mesma interface de API que são utilizados nos recursos AWS
 Após ter uma versão usável, o código e enviado o git, que inicia a pipeline.
 A pipeline vai realizar as seguintes etapas:
 
-1. Realizar o build da app;
-2. Validar o cloudformation criado
-3. Validar o teste de integração usando o localstack
-4. Aplicar na conta AWS
+- 1. Realizar o build da app;
+- 2. Validar o cloudformation criado
+- 3. Validar o teste de integração usando o localstack
+- 4. Aplicar na conta AWS
 
-PoC usando o localstack
+# PoC usando o localstack
 
 Para expreementar esse modelo, vamos propor o desenvolvimento de uma aplicação com os recursos AWS.
 
@@ -47,12 +47,13 @@ Aplicação é bastante simples, basicamente monitora o preço de um produto no 
 O usuário acessa uma url e cadastra o nome do produto. Recebe diariamente um reporte dos melhores preços.
 
 Os recursos da AWS que serão utilizados:
-• S3: Hospedagem do frontend do site e para armazenar a imagem do produto.
-• Lambda: Para scrapy no mercado livre e OLX e montagem do email.
-• Dynamodb: Persistir o histórico de preços
-• SQS: Fila para acionar o lambda
-• SNS: Envio do reporte
-• Cloudwatch: schedule para lambda.
+* `S3`: Hospedagem do frontend do site e para armazenar a imagem do produto.
+* `Lambda`: Para scrapy no mercado livre e OLX e montagem do email.
+* `Dynamodb`: Persistir o histórico de preços
+* `SQS`: Fila para acionar o lambda
+* `SNS`: Envio do reporte
+* `Cloudwatch`: schedule para lambda.
+
 Vamos seguir o seguinte fluxo de desenvolvimento.
 
 1. Localmente:
