@@ -66,7 +66,7 @@ $ docker run -it  -p 4567-4599:4567-4599 -p 8080:8080 localstack/localstack
 `
 para facilitar a chamada dos EndPoint, criamos as seguintes variáveis de ambiente dos recursos que vamos utilizar durante o projeto.
 
-`
+```bash
 # EndPoint do S3
 export s3=http://localhost:4572
 
@@ -85,15 +85,15 @@ export cloudwatch=http://localhost:4581
 # EndPoint do Dynamodb
 export dynamodb=http://localhost:4569
 
-`
+```
 
 Também vamos precisar do `AWS CLI` instalado e configurado.
 
 Para instalar vamos usar o seguinte comando:
 
-`
+```bash
 $ pip install awscli
-`
+```
 
 E para configurar vamos execucar o comando configure e nos campos `ACCESS KEY` e `SECRET ACCESS KEY` pode preencher com qualquer conteúdo. Não vamos usar essas chaves.
 
@@ -116,22 +116,22 @@ Para validar localmente o desenvolvimento do site, vamos criar um `Bucket` e sub
 
 Criando o Bucket com o nome `frontend`:
 
-`
+```
 $ aws --endpoint-url=$s3 s3 mb s3://frontend
-`
+```
 
 Vamos definir que esse site vai receber conteúdo de website:
 
-`
+```
 $ aws --endpoint-url=$s3 s3 website s3://frontend --index-document index.html --error-document error.html
-`
+```
 
 E para finalizar vamos copiar os arquivos do site para o bucket:
 
-`
+```
 $ aws --endpoint-url=$s3 s3 cp index.html s3://frontend/  --acl public-read
 
-`
+```
 
 Vamos validar esse primeiro passo, verificando a infra criado no dashboard do LocalStack.
 
@@ -150,29 +150,29 @@ A primeira tabela vamos chamar de `produtos`. Essa tabela vai receber o `input` 
 
 Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar o `CloudFormation` para deploy na AWS.
 
-`
+```
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
       --attribute-definitions AttributeName=id,AttributeType=N AttributeName=email,AttributeType=S \
       --key-schema AttributeName=id,KeyType=HASH AttributeName=email,KeyType=RANGE \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
-`
+```
 
 Vamos realizar a primeira carga na tabela, simulando a entrada pelo site.
 
-`
+```
 $ python dynamodb/popula_produtos.py
-`
+```
 
 A segunda tabela vamos chamar de `infos`. Essa tabela terá ligação com a primeira tabela através do `id`, e vamos armazenar os links pesquisados e informações sobre o produto.
 
 Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar o `CloudFormation` para deploy na AWS.
 
-`
+```
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name infos  \
       --attribute-definitions AttributeName=id,AttributeType=N AttributeName=url,AttributeType=S  \
       --key-schema AttributeName=id,KeyType=HASH AttributeName=url,KeyType=RANGE  \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
-`
+```
 
 Para popular a segunda tabela vamos desenvolver um função `lambda` que raspa os dados do Mercado Livre e salva no Dynamodb. 
 
@@ -189,20 +189,28 @@ Vamos seguir o seguintes passos:
 > Para deploy na AWS vamos utilizar uma pipeline.
 
 1. Crie o diretório package:
-  `$ mkdir package`
+  ```
+  $ mkdir package
+  ```
 
 2. Instale todos as dependência utilizada:
-  `$ pip install --targget ./package -r requirements.txt`
+  ```
+  $ pip install --targget ./package -r requirements.txt
+  ```
 
 3. Copie o programa para o diretório package:
-  `cp busca_produto.py package/`
+  ```
+  cp busca_produto.py package/
+  ```
 
 4. Crie o pacote com o zip:
-  `$ zip -r9 function.zip package/.`
+  ```
+  $ zip -r9 function.zip package/.
+  ```
 
 Agora podemos realizar o deploy do `lambda` utilizando o `AWS CLI`.
 
-`
+```
 aws --endpoint-url=$lambda lambda create-function --function-name busca_produto --zip-file fileb://function.zip --handler busca_produto.handler --runtime python3.7 --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
 
 {
@@ -222,19 +230,20 @@ aws --endpoint-url=$lambda lambda create-function --function-name busca_produto 
     },
     "RevisionId": "06b9be26-b015-46ea-9726-ab6bd89e000d"
 }
-`
+```
+
 Como o deploy realizada da função `lambda` podemos realizar uma chamada para executação e certificar que a `lambda` funciona corretamente.
 
-`
+```
 $ aws --endpoint-url=$lambda lambda invoke --function-name busca_produto --payload '{}' saida.txt
-`
+```
 
 Após a execução da `lambda`podemos olhar no `dynamodb` e certificar que os dados foram gravados corretamente.
 
-`
+```
 $ aws --endpoint-url=$dynamodb dynamodb scan --table-name produtos  --return-consumed-capacity TOTAL
 $ aws --endpoint-url=$dynamodb dynamodb scan --table-name infos  --return-consumed-capacity TOTAL
-`
+```
 
 Agora vamos criar uma segunda função em `lambda` que vai pegar as urls cadastradas e obter as informaçãoes como preço do produto.
 

@@ -2,6 +2,14 @@
 
 dynamodb="http://localhost:4569"
 
+
+echo "
+     ########################################################
+     #######  Criando tabela Dynamodb  Localmente   #########
+     ########################################################
+     "
+
+
 aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
       --attribute-definitions AttributeName=id,AttributeType=N AttributeName=email,AttributeType=S \
       --key-schema AttributeName=id,KeyType=HASH AttributeName=email,KeyType=RANGE \
