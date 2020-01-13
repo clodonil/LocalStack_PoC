@@ -61,9 +61,10 @@ Vamos seguir o seguinte fluxo de desenvolvimento.
 
 No computador local, usando o `Docker` inicializamos o `LocalStack` com o seguinte comando.
 
-`
+```bash
 $ docker run -it  -p 4567-4599:4567-4599 -p 8080:8080 localstack/localstack
-`
+```
+
 para facilitar a chamada dos EndPoint, criamos as seguintes variáveis de ambiente dos recursos que vamos utilizar durante o projeto.
 
 ```bash
@@ -152,8 +153,8 @@ Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar
 
 ```
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
-      --attribute-definitions AttributeName=id,AttributeType=N AttributeName=email,AttributeType=S \
-      --key-schema AttributeName=id,KeyType=HASH AttributeName=email,KeyType=RANGE \
+      --attribute-definitions AttributeName=email,AttributeType=N AttributeName=nome_produto,AttributeType=S \
+      --key-schema AttributeName=email,KeyType=HASH AttributeName=nome_produto,KeyType=RANGE \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 ```
 

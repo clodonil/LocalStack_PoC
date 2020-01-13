@@ -11,8 +11,8 @@ echo "
 
 
 aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
-      --attribute-definitions AttributeName=id,AttributeType=N AttributeName=email,AttributeType=S \
-      --key-schema AttributeName=id,KeyType=HASH AttributeName=email,KeyType=RANGE \
+      --attribute-definitions AttributeName=email,AttributeType=N AttributeName=nome_produto,AttributeType=S \
+      --key-schema AttributeName=email,KeyType=HASH AttributeName=nome_produto,KeyType=RANGE \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 
 
