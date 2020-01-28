@@ -138,11 +138,8 @@ Vamos validar esse primeiro passo acessando o frontend..
 
 http://localhost:4572/frontend/index.html
 
-!(img/frontend.png)[Dashboard]
 
-E também vamos acessar o site:
-
-!(img/frontend.jpg)[FrontEnd]
+![FrontEnd](img/frontend.png)
 
 
 ## Lambda e DynamoDB
