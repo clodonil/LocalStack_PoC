@@ -10,9 +10,9 @@
                 <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
                 <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
                 <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
-                <script type="text/javascript" src="js/dynamodb.js"></script>
-              </head>
-                    <body>
+                <script src="js/dynamodb.js"></script>
+        </head>
+            <body>
                             <nav class="light-blue lighten-1" role="navigation">
                     <div class="nav-wrapper">
                       <a href="#" class="brand-logo center">Sua Melhor Compra</a>
@@ -25,34 +25,42 @@
             <div class="row"></div>      
             <div class="container">
                     <div class="section">
-                            
+
+                        <div class="row">
+                            <p id="message"></p>
+                          </div>
+                                  
             <div class="row">
 
-                <form class="col s12">
+               
                   <div class="row">
-                    <div class="input-field col s12">
-                        
+                      <div class="input-field col s12">                        
+                          <input placeholder="Email" id="email" type="text" class="validate" required>
+                          <label for="email">E-Mail</label>                      
+                        </div>
+    
+                    <div class="input-field col s12">                        
                       <input placeholder="Nome do produto desejado" id="produto" type="text" class="validate" required>
-                      <label for="produto">Produto</label>
-                      
+                      <label for="produto">Produto</label>                      
                     </div>
                     <div class="input-field col s12">
-                      <input placeholder="Preço desejado para compra" id="text" type="number" class="validate">
+                      <input placeholder="Preço desejado para compra" id="preco" type="number" class="validate">
                       <label for="preco">Preço Desejado</label>
                     </div>
                   </div>                  
                   <div class="row center">
-                        <button id='submit-btn' class="btn waves-effect waves-light btn-large  orange" name="action" type = "submit">Salvar
+                        <button id='submit-btn' class="btn waves-effect waves-light btn-large  orange" name="action" type = "submit" onclick="createItem();">Salvar
                               <i class="material-icons right">send</i>
                        </button>
                       </div>
-          
-                </form>
-              </div>   
+                      
+               
+              </div>
              </div>
             </div>
               <div class="row"></div>      
-              <div class="row"></div>      
+              <div class="row"></div> 
+              
               <div class="row"></div>      
               <div class="row"></div>      
               <footer class="page-footer light-blue lighten-1" >

@@ -130,11 +130,13 @@ $ aws --endpoint-url=$s3 s3 website s3://frontend --index-document index.html --
 E para finalizar vamos copiar os arquivos do site para o bucket:
 
 ```
-$ aws --endpoint-url=$s3 s3 cp index.html s3://frontend/  --acl public-read
-
+$ aws --endpoint-url=$s3 s3 cp .  s3://frontend/  --acl public-read --recursive
 ```
 
 Vamos validar esse primeiro passo, verificando a infra criado no dashboard do LocalStack.
+
+
+http://localhost:4572/frontend/index.html
 
 !(img/dashboard.jpg)[Dashboard]
 
@@ -153,8 +155,8 @@ Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar
 
 ```
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
-      --attribute-definitions AttributeName=email,AttributeType=N AttributeName=nome_produto,AttributeType=S \
-      --key-schema AttributeName=email,KeyType=HASH AttributeName=nome_produto,KeyType=RANGE \
+      --attribute-definitions AttributeName=email,AttributeType=S AttributeName=produto,AttributeType=S \
+      --key-schema AttributeName=email,KeyType=HASH AttributeName=produto,KeyType=RANGE \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 ```
 
@@ -170,7 +172,7 @@ Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar
 
 ```
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name infos  \
-      --attribute-definitions AttributeName=id,AttributeType=N AttributeName=url,AttributeType=S  \
+      --attribute-definitions AttributeName=email,AttributeType=S AttributeName=url,AttributeType=S  \
       --key-schema AttributeName=id,KeyType=HASH AttributeName=url,KeyType=RANGE  \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 ```
