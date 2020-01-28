@@ -133,12 +133,12 @@ E para finalizar vamos copiar os arquivos do site para o bucket:
 $ aws --endpoint-url=$s3 s3 cp .  s3://frontend/  --acl public-read --recursive
 ```
 
-Vamos validar esse primeiro passo, verificando a infra criado no dashboard do LocalStack.
+Vamos validar esse primeiro passo acessando o frontend..
 
 
 http://localhost:4572/frontend/index.html
 
-!(img/dashboard.jpg)[Dashboard]
+!(img/frontend.png)[Dashboard]
 
 E também vamos acessar o site:
 
