@@ -59,16 +59,27 @@ class ScrapyML:
                     if len(self.list_prod) < self.max_link:
                        if len(hlink) < 255:
                           self.list_prod.append(hlink) 
-         
+          else:
+             for link in page.find_all('a', attrs={'class':'item__info-link item__js-link'}):
+                 print(link)
+                 hlink = link.get('href')
+                 if len(link.text) > 0:
+                    if not hlink in self.links:
+                       if len(self.list_prod) < self.max_link:
+                          if len(hlink) < 255:
+                             self.list_prod.append(hlink) 
+
+          
 
           if len(self.list_prod) < self.max_link:
              __next = page.find('li', attrs={'class':'andes-pagination__button andes-pagination__button--next'})
           
              print(__next)
-             next_url = __next.a.get('href')
+             if __next != 'None':
+                next_url = __next.a.get('href')
           
-             if next_url != "#":
-                proximo = next_url
+                if next_url != "#":
+                   proximo = next_url
    
           return proximo
 
@@ -113,12 +124,12 @@ def Dy_Get_Produto():
     return retorno['Items']
 
 
-def dynamodb_save(table,id,url):
+def dynamodb_save(table,email,url):
     client = boto3.resource('dynamodb',region_name='sa-east-1', endpoint_url='http://localhost:4569')
     table = client.Table(table)
     
     retorno= {'ResponseMetadata': {'HTTPStatusCode' : 300    }}
-    keys = {'id': id, 'url': url, 'detail': []}
+    keys = {'email': email, 'url': url, 'detail': []}
     try:
         retorno=table.put_item(Item=keys)
     except botocore.exceptions.ClientError as e:
@@ -138,11 +149,11 @@ def handler(event, context):
     for lista in Dy_Get_Produto(): 
         print(lista)
         if lista['detail']['status'] == 'true':
-           produto = lista['detail']['produto'].lower().replace(" ","-")
+           produto = lista['produto'].lower().replace(" ","-")
            url="http://lista.mercadolivre.com.br/{0}#D[A:{0}]".format(produto)
            site_connect =ScrapyML()
            links = site_connect.run(url)
            print(links)             
            for link in links:
-              dynamodb_save('infos',lista['id'],link)
+              dynamodb_save('infos',lista['email'],link)
                 

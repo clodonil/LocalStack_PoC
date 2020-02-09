@@ -107,14 +107,14 @@ def handler(event, context):
      for lista in lista_produtos:         
          if lista['detail']['status'] == 'true':
                 ml = ScrapyML()
-                min_preco = lista['detail']['min_preco']['preco']                
+                min_preco = lista['detail']['menor_preco']['preco']                
                 preco_compra = lista['detail']['preco_compra']
-                if int(preco_compra) >= int(min_preco):
-                   url = lista['detail']['min_preco']['url'] 
+                if float(preco_compra) >= float(min_preco):
+                   url = lista['detail']['menor_preco']['url'] 
                    info = ml.comprar(url,min_preco, preco_compra)
                    if info['status'] == 'true':
                       lista['detail']['status'] = 'false'
-                      head = {'id': lista['id'], 'email' : lista['email']}
+                      head = {'produto': lista['produto'], 'email' : lista['email']}
                       dynamodb_save('produtos', head,lista)  
                       print(info)
             

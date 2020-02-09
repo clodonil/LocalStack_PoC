@@ -22,7 +22,7 @@ AWS.config.update({
           Item:{
               "email": email,
               "produto": produto,
-              "details":{
+              "detail":{
                   "status" : "true",
                   "preco_compra" : preco
               }

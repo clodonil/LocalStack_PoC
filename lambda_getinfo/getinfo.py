@@ -86,7 +86,7 @@ def dynamodb_query(table, query):
     if query == 'full':
        retorno = table.scan()
     else:
-       retorno = table.query(KeyConditionExpression=Key('id').eq(query))   
+       retorno = table.query(KeyConditionExpression=Key('email').eq(query))   
 
     return retorno['Items']
 
@@ -95,8 +95,6 @@ def dynamodb_save(table,head,dados):
     client = boto3.resource('dynamodb',region_name='sa-east-1', endpoint_url='http://localhost:4569')
     table = client.Table(table)
 
-    print(head)
-    print(dados['detail'])
     retorno=table.update_item(Key=head,
                              UpdateExpression="set detail = :a",
                              ExpressionAttributeValues={':a': dados['detail']},
@@ -114,26 +112,30 @@ def handler(event, context):
      lista_produtos = dynamodb_query('produtos', 'full')
      for lista in lista_produtos:         
          if lista['detail']['status'] == 'true':
-            lista_url = dynamodb_query('infos',lista['id'])
+            lista_url = dynamodb_query('infos',lista['email'])
             for item in lista_url:
                 ml = ScrapyML()                
                 infos = ml.get_info(item['url'])                                
                 item['detail'].append(infos)
-            
-                head = {'id': int(item['id']), 'url': item['url']}
-                if dynamodb_save('infos', head, item):
-                    if int(lista['detail']['min_preco']['preco']) != 0:
-                       if int(lista['detail']['min_preco']['preco']) > int(infos['preco']):
-                          lista['detail']['min_preco'] = {'preco': infos['preco'],'url' : item['url']}
-                    else:
-                       lista['detail']['min_preco'] = {'preco': infos['preco'],'url' : item['url']}
+               
+                head = {'email': item['email'], 'url': item['url']}
 
-                    if int(lista['detail']['max_preco']['preco']) != 0:
-                        if int(lista['detail']['max_preco']['preco']) < int(infos['preco']):
-                          lista['detail']['max_preco'] = {'preco': infos['preco'],'url' : item['url']}
+                if dynamodb_save('infos', head, item):
+                    # Salvando o menor preco
+                    if 'menor_preco' in lista['detail']:
+                       if float(lista['detail']['menor_preco']['preco']) > float(infos['preco']):
+                          lista['detail']['menor_preco'] = {'preco': infos['preco'],'url' : item['url']}
                     else:
-                        lista['detail']['max_preco'] = {'preco': infos['preco'],'url' : item['url']}
+                       lista['detail']['menor_preco'] = {'preco': infos['preco'],'url' : item['url']}
+
+                    # Salvando o maior preco
+                    if 'maior_preco' in lista['detail']:
+                        if float(lista['detail']['maior_preco']['preco']) < float(infos['preco']):
+                          lista['detail']['maior_preco'] = {'preco': infos['preco'],'url' : item['url']}
+                    else:
+                        lista['detail']['maior_preco'] = {'preco': infos['preco'],'url' : item['url']}
             print(lista)
-            head = {'id': lista['id'], 'email' : lista['email']}
+            head = {'email': lista['email'], 'produto' : lista['produto']}
             dynamodb_save('produtos', head,lista)  
 
+handler('vdfsdfds','dsfsdfsd')
