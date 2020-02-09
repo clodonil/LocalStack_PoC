@@ -143,11 +143,23 @@ def dynamodb_save(table,email,url):
         return False
 
 
+def ssm_get(key):
+    client = boto3.client('ssm', region_name='us-east-1', endpoint_url='http://localhost:4583')
+    parameter = client.get_parameter(Name=key, WithDecryption=False)
+    return parameter['Parameter']['Value']
+    
+
+def sns_subscribe(email):
+    client = boto3.client('sns',region_name='sa-east-1', endpoint_url='http://localhost:4575')
+    arn_sns = ssm_get('SNS')
+    response = client.subscribe(TopicArn=arn_sns,Protocol='email',Endpoint=email,ReturnSubscriptionArn=True)
+    
 
 def handler(event, context):
     print("executando a lambda")
-    for lista in Dy_Get_Produto(): 
-        print(lista)
+    for lista in Dy_Get_Produto():
+        print(lista['email']) 
+        sns_subscribe(lista['email'])
         if lista['detail']['status'] == 'true':
            produto = lista['produto'].lower().replace(" ","-")
            url="http://lista.mercadolivre.com.br/{0}#D[A:{0}]".format(produto)

@@ -25,12 +25,24 @@ zip -r9 function.zip . > /dev/null
 cd ..
 mv package/function.zip .
 
-aws --endpoint-url=$lambda lambda create-function --function-name busca_produto \
+LAMBDA_BUSCA_PRODUTO=$(aws --endpoint-url=$lambda lambda create-function --function-name busca_produto \
     --zip-file fileb://function.zip --handler busca_produto.handler --runtime python3.7 \
-     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ \
+     --output json --query [FunctionName,FunctionArn,Role])
 
 rm -rf package
 rm -rf *.zip
+
+
+name=$(echo $LAMBDA_BUSCA_PRODUTO | awk {'print $1'})
+arn=$(echo $LAMBDA_BUSCA_PRODUTO | awk {'print $2'})
+role=$(echo $LAMBDA_BUSCA_PRODUTO | awk {'print $3'})
+
+
+echo "lambdaName: $name"
+echo "FunctionArn: $arn"
+echo "FunctionRole: $role"
+
 
 echo "
      #############################################
@@ -48,12 +60,22 @@ zip -r9 function.zip . > /dev/null
 cd ..
 mv package/function.zip .
 
-aws --endpoint-url=$lambda lambda create-function --function-name getinfo \
+LAMBDA_GETINFO=$(aws --endpoint-url=$lambda lambda create-function --function-name getinfo \
     --zip-file fileb://function.zip --handler getinfo.handler --runtime python3.7 \
-     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ \
+     --output json --query [FunctionName,FunctionArn,Role])
 
 rm -rf package
 rm -rf *.zip
+
+name=$(echo $LAMBDA_GETINFO | awk {'print $1'})
+arn=$(echo $LAMBDA_GETINFO | awk {'print $2'})
+role=$(echo $LAMBDA_GETINFO | awk {'print $3'})
+
+
+echo "lambdaName: $name"
+echo "FunctionArn: $arn"
+echo "FunctionRole: $role"
 
 echo "
      #############################################
@@ -71,12 +93,22 @@ zip -r9 function.zip . > /dev/null
 cd ..
 mv package/function.zip .
 
-aws --endpoint-url=$lambda lambda create-function --function-name comprar \
+LAMBDA_COMPRAR=$(aws --endpoint-url=$lambda lambda create-function --function-name comprar \
     --zip-file fileb://function.zip --handler comprar.handler --runtime python3.7 \
-     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ \
+     --output json --query [FunctionName,FunctionArn,Role])
+
 rm -rf package
 rm -rf *.zip
 
+name=$(echo $LAMBDA_COMPRAR | awk {'print $1'})
+arn=$(echo $LAMBDA_COMPRAR | awk {'print $2'})
+role=$(echo $LAMBDA_COMPRAR | awk {'print $3'})
+
+
+echo "lambdaName: $name"
+echo "FunctionArn: $arn"
+echo "FunctionRole: $role"
 echo "
      #############################################
      #######    Lambda ->  Report       #########
@@ -93,8 +125,19 @@ zip -r9 function.zip . > /dev/null
 cd ..
 mv package/function.zip .
 
-aws --endpoint-url=$lambda lambda create-function --function-name report \
+LAMBDA_REPORT=$(aws --endpoint-url=$lambda lambda create-function --function-name report \
     --zip-file fileb://function.zip --handler report.handler --runtime python3.7 \
-     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+     --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ \
+     --output text --query [FunctionName,FunctionArn,Role])
+
 rm -rf package
 rm -rf *.zip
+
+name=$(echo $LAMBDA_REPORT | awk {'print $1'})
+arn=$(echo $LAMBDA_REPORT | awk {'print $2'})
+role=$(echo $LAMBDA_REPORT | awk {'print $3'})
+
+
+echo "lambdaName: $name"
+echo "FunctionArn: $arn"
+echo "FunctionRole: $role"

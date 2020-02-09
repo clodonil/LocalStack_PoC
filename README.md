@@ -40,6 +40,20 @@ A pipeline vai realizar as seguintes etapas:
 3. Validar o teste de integração usando o localstack
 4. Aplicar na conta AWS
 
+2. AWS 
+
+
+Pontos Positivos:
+  - É possível dar um reset no ambiente apens parando o container;
+  - Validar o programa chamado os endpoint antes de fazer o deploy da lambda;
+
+Pontos Negativos:
+  - Por algum motivos, alguns endpoint mudam de region;
+  - SNS não envia email para subscrição; Usei um SQS para validar
+
+
+Durante o desenvolvimento, ficou muito fácil limpar todo o ambiente e começar novamente.
+
 # PoC usando o localstack
 
 Para experimentar esse modelo, vamos propor o desenvolvimento de uma aplicação com os recursos AWS.
@@ -90,6 +104,11 @@ export cloudwatch=http://localhost:4581
 # EndPoint do Dynamodb
 export dynamodb=http://localhost:4569
 
+# EndPoint do CloudWatch Events
+export events=http://localhost:4587
+
+# EndPoint do DynamoDB Streams
+export streams=http://localhost:4570
 ```
 
 Também vamos precisar do `AWS CLI` instalado e configurado.
@@ -270,20 +289,45 @@ Utilizando o AWS CLI, podemos listar todos:
 $ aws --endpoint-url=$lambda lambda list-functions
 ```
 
-# SNS
-
-TOPIC_ARN=$(aws sns create-topic \
-  --name service-proxy-topic \
-  --output text \
-  --query 'TopicArn')
 
 aws --endpoint-url=http://localhost:4575  sns create-topic --name notificacao-compra
 aws --endpoint-url=http://localhost:4575 sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:notificacao-compra --protocol email --notification-endpoint clodonil@nisled.org
 
 
-2. AWS 
+# CloudWatch Event
 
 
-Pontos Positivos:
+# Envindo relatório de itens pesquisados e valores
 
-Durante o desenvolvimento, ficou muito fácil limpar todo o ambiente e começar novamente.
+
+aws --endpoint-url=$events events put-rule --name 'DailyRuleReport' --schedule-expression 'rate(1 day)'
+
+aws --endpoint-url=$lambda lambda add-permission --function-name report --statement-id StartReport --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/DailyRuleReport
+
+aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
+
+# Buscando informações sobre os produtos
+
+
+aws --endpoint-url=$events events put-rule --name 'ScrapyInfoProduto' --schedule-expression 'rate(1 day)'
+
+aws --endpoint-url=$lambda lambda add-permission --function-name getinfo --statement-id StartScrapyInfoProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyInfoProduto
+
+aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
+
+
+# Lambda trigger pelo Dynamodb
+
+
+aws --endpoint-url=$events events put-rule --name 'ScrapyProduto1' --schedule-expression 'rate(1 minutes)'
+
+aws --endpoint-url=$lambda lambda add-permission --function-name busca_produto --statement-id StartScrapyProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyProduto1
+
+aws --endpoint-url=$events events put-targets --rule ScrapyProduto1 --targets '{"Id" : "2", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:busca_produto"}'
+
+
+# SQS e SNS
+
+
+aws --endpoint-url=$sns sns create-topic --name reports
+aws --endpoint-url=$sqs sqs create-queue --queue-name fila-de-compra

@@ -38,8 +38,16 @@ def dynamodb_query(table, query):
     
     return retorno
 
+
+def ssm_get(key):
+    client = boto3.client('ssm', region_name='us-east-1', endpoint_url='http://localhost:4583')
+    parameter = client.get_parameter(Name=key, WithDecryption=False)
+    return parameter['Parameter']['Value']
+    
+
 def notify_sns(arn,message):
     client = boto3.client('sns', endpoint_url='http://localhost:4575')
+    arn = ssm_get('SNS')
     response = client.publish(TargetArn=arn,Message=json.dumps(message))
     print(response)
 
@@ -56,27 +64,26 @@ def handler(event, context):
                     for scan in item['detail']:
                         preco += int(scan['preco'])
                         itens += 1
+
+                if itens > 0:   
+                   medio =  preco / itens
+                
+                   min_preco = lista['detail']['menor_preco']['preco']
+                   max_preco = lista['detail']['menor_preco']['preco']                
+                   preco_compra = lista['detail']['preco_compra']
+
+                   report = {
+                      'produto' : lista['produto'],
+                      'PrecoDesejado': lista['detail']['preco_compra'],
+                      'menor_preco' : lista['detail']['menor_preco']['preco'],
+                      'maior_preco' : lista['detail']['maior_preco']['preco'],
+                      'itens_pesquisados' : itens,
+                      'preco_medio' : medio
+                   }            
                    
-                medio =  preco / itens
-
+                   notify_sns(report)
                 
-                min_preco = lista['detail']['menor_preco']['preco']
-                max_preco = lista['detail']['menor_preco']['preco']                
-                preco_compra = lista['detail']['preco_compra']
-
-                report = {
-                    'produto' : lista['produto'],
-                    'PrecoDesejado': lista['detail']['preco_compra'],
-                    'menor_preco' : lista['detail']['menor_preco']['preco'],
-                    'maior_preco' : lista['detail']['maior_preco']['preco'],
-                    'itens_pesquisados' : itens,
-                    'preco_medio' : medio
-                }            
-
-                arn = 'arn:aws:sns:us-east-1:000000000000:notificacao-compra'
-                notify_sns(arn, report)
-                
-                print(report)
+                   print(report)
 
 
 
