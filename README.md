@@ -74,12 +74,17 @@ Durante o desenvolvimento do projeto foram obtidas algumas percepções que fora
   * Chamadas usando o `AWS CLI` e SDK AWS;
   * Funcionalidades similares ao produto AWS;
   * Validar o programa chamado os Endpoint antes de fazer o deploy da lambda;
+  * Dashboard do localstack
 
 ## Pontos Negativos:
 
   * Alguns EndPoint aparecem em região diferente;
   * SNS não envia e-mail externo para subscrição; Usei um SQS para validar;
   * Ter que manipular EndPoint local e AWS;
+
+Através de um dashboard simples, é possível acompanhar o provisionamento dos recursos:
+
+![dashboard](img/localstack.png)
 
 # Desenvolvimento
 
@@ -346,7 +351,7 @@ O script que cria o [`create_sqs_sns.sh`](scripts/create_sqs_sns.sh).
 
 
 
-# Enviando relatório de itens pesquisados e valores
+## Enviando relatório de itens pesquisados e valores
 
 
 ```bash
@@ -357,7 +362,7 @@ $ aws --endpoint-url=$lambda lambda add-permission --function-name report --stat
 $ aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
 ```
  
-# Buscando informações sobre os produtos
+## Buscando informações sobre os produtos
 
  
 ```bash
