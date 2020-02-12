@@ -82,10 +82,6 @@ Durante o desenvolvimento do projeto foram obtidas algumas percepções que fora
   * SNS não envia e-mail externo para subscrição; Usei um SQS para validar;
   * Ter que manipular EndPoint local e AWS;
 
-Através de um dashboard simples, é possível acompanhar o provisionamento dos recursos:
-
-![dashboard](img/localstack.png)
-
 # Desenvolvimento
 
 Para experimentar esse modelo, vamos propor o desenvolvimento de uma aplicação com os recursos AWS.
@@ -349,17 +345,18 @@ O script que cria o [`create_sqs_sns.sh`](scripts/create_sqs_sns.sh).
 # CloudWatch Event
 
 
-
-
 ## Enviando relatório de itens pesquisados e valores
 
 
 ```bash
 $ aws --endpoint-url=$events events put-rule --name 'DailyRuleReport' --schedule-expression 'rate(1 day)'
 
-$ aws --endpoint-url=$lambda lambda add-permission --function-name report --statement-id StartReport --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/DailyRuleReport
+$ aws --endpoint-url=$lambda lambda add-permission --function-name report --statement-id StartReport \
+      --action 'lambda:InvokeFunction' --principal events.amazonaws.com \
+      --source-arn arn:aws:events:us-west-2:111111111111:rule/DailyRuleReport
 
-$ aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
+$ aws --endpoint-url=$events events put-targets --rule DailyRuleReport 
+      --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
 ```
  
 ## Buscando informações sobre os produtos
@@ -368,9 +365,12 @@ $ aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets
 ```bash
 $ aws --endpoint-url=$events events put-rule --name 'ScrapyInfoProduto' --schedule-expression 'rate(1 day)'
 
-$ aws --endpoint-url=$lambda lambda add-permission --function-name getinfo --statement-id StartScrapyInfoProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyInfoProduto
+$ aws --endpoint-url=$lambda lambda add-permission --function-name getinfo --statement-id StartScrapyInfoProduto \
+      --action 'lambda:InvokeFunction' --principal events.amazonaws.com \
+      --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyInfoProduto
 
-$ aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
+$ aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto \
+      --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
 ```
 
 # Deploy Local
@@ -378,3 +378,7 @@ $ aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto --targe
 Toos os scripts utilizados são chamado pelo arquivo `deploy.sh` que provisiona todo o ambiente de forma rápida. 
 
 ![deploy](img/deploy.png)
+
+Através de um dashboard simples, é possível acompanhar o provisionamento dos recursos:
+
+![dashboard](img/localstack.png)
