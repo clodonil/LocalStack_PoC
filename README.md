@@ -1,28 +1,32 @@
 # Desenvolvendo para AWS usando SandBox Local
 
-É muito comum nas empresas que adotam a cloud pública como AWS, pensarem em modelo para disponibilizarem aos desenvolveres recursos para testarem e homologarem as aplicações desenvolvidas.
+ É muito comum nas empresas que adotam a cloud pública como AWS, pensarem em modelo para disponibilizarem aos desenvolveres para testarem e homologarem as aplicações.
 
-Algumas empresas utilizam como estrategia disponibiliza a mesmo conta produtiva para teste e homologacao , separando os ambientes por VPC ou cluster utilizando chamadas API.  Seguindo a 2 lei de newton, esse ambiente em constante mudança tende a degradar, e com o passar do tempo a segregação dos ambientes não são respeitados. Esses modelo trás grandes ricos de desastre.
+Algumas empresas utilizam como estratégia disponibiliza a mesmo conta produtiva para teste e homologação , separando os ambientes por VPCs ou Clusters.
 
-Outras empresas liberar uma conta AWS como SandBox para os desenvolvedores realizarem as chamadas de API. Pode parecer ser uma boa ideia, entretanto alguns riscos estão envolvidos nesse processo. Tais como:
+Esse ambiente em constante mudança tende a degradar, e com o passar do tempo a segregação dos ambientes não são respeitados. Esse modelo traz grandes ricos de desastre.
 
-1) Apesar da conta ser usado para SandBox, é uma conta normal na AWS, portanto pode surgir `shadow IT`, tornando o ambiente de SandBox em ambiente produtivo; Esse risco é maior quando não é usado infraestrutura como código.
+Outras empresas liberaram uma nova conta AWS como SandBox. Aparentemente é uma boa ideia, entretanto alguns riscos estão envolvidos nesse processo.
 
-2) Qualquer recurso instanciado é cobrado, portanto o risco de perder o controle da conta é grande; Uma chave de acesso vazada pode causar prejuízos enormes.
+Tais como:
 
-3) Risco de usar dados produtivos no ambiente de SandBox.
+* Apesar da conta ser usado para SandBox, é uma conta normal na AWS, portanto pode surgir `shadow IT`, tornando o ambiente de SandBox em ambiente produtivo; Esse risco é maior quando não é usado infraestrutura como código.
 
-Outra possibilidade é o desenvolver trabalhar localmente e construir a infraestrutura como código interagindo diretamente com as API do provider mocado localmente.
+* Qualquer recurso instanciado é cobrado, Existe o risco de perder o controle do custo da conta; Uma chave de acesso vazada pode causar prejuízos enormes.
 
-Neste caso, não existe uma conta AWS e muito menos uma console AWS. Considerando que uma adoção de Cloud Pública envolve também adotar métodologias como Infra estrutura como código, não faz muito sentido liberar a console AWS para os desenvolvedores.
+*  Risco de usar dados produtivos no ambiente de SandBox.
 
-Para ganhar agilidade no desenvolvimento, o ideal é realizar toda a construção localmente, isso é, na máquina do desenvolvedor.
+Outra possibilidade é o desenvolver trabalhar localmente e construir a infraestrutura como código interagindo diretamente com as API do provider `mocado` localmente.
 
-O computador local do desenvolver é o seu  SandBox. Ele pode construir e destruir o ambiente quantas vezes forem necessário, sem afetar outros projetos e sem custos já assumidos.
+Para ganhar agilidade no desenvolvimento, toda a construção é realizada localmente, isso é, na máquina do desenvolvedor.
 
-Dessa forma os desenvolvedores passam a conhecer os recursos principais da AWS através de chamadas de API local e  escrever a infraestrutura em código utilizando Terraform ou Cloudformation.
+Neste caso, não existe uma conta AWS e muito menos uma console AWS. Considerando que uma adoção de Cloud Pública envolve também adotar metodologias como Infraestrutura como código, não faz muito sentido liberar a console AWS para os desenvolvedores.
 
-Validado localmente aplicação, a solução completa que envolve código e infraestrutura podem ser enviada para AWS e realizada o deploy através de uma pipeline.
+O computador local do desenvolver é o seu SandBox. Ele pode construir e destruir o ambiente quantas vezes forem necessários, sem afetar outros projetos e sem custos.
+
+Dessa forma os desenvolvedores passam a conhecer os recursos principais da AWS através de chamadas de API local e escrever a infraestrutura em código utilizando Terraform ou Cloudformation.
+
+Validado localmente aplicação, a solução completa que envolve código e infraestrutura podem ser enviada para AWS e realizada o `deploy` através de uma pipeline.
 
 Para validar localmente, vamos utilizar o localstack. Se você não conhece o localstack, preparei um tutorial com os principais recursos.
 
@@ -30,62 +34,103 @@ O localstack instância localmente os principais serviços AWS, possibilitando a
 
 Dessa forma o desenvolvedor constrói toda a infra localmente e desenvolve local realizando as chamadas para as API do localstack. Nesse momento não é necessário nenhuma conta da AWS. Tudo é realizado localmente.
 
-Localstack utiliza a mesma interface de API que são utilizados nos recursos AWS. O desenvolvedor não tem nenhum prejuízo.
+O localstack utiliza a mesma interface de API que são utilizados nos recursos AWS. O desenvolvedor não tem nenhum prejuízo.
 
-Após ter uma versão usável, o código e enviado o git, que inicia a pipeline.
+Após ter uma versão estável, o código é submetido ao git, que inicia a pipeline.
+
 A pipeline vai realizar as seguintes etapas:
 
-1. Realizar o build da app;
-2. Validar o cloudformation criado
-3. Validar o teste de integração usando o localstack
-4. Aplicar na conta AWS
+- Realizar o build da app;
 
-2. AWS 
+- Validar o cloudformation criado
 
+- Validar o teste de integração usando o localstack
 
-Pontos Positivos:
-  - É possível dar um reset no ambiente apens parando o container;
-  - Validar o programa chamado os endpoint antes de fazer o deploy da lambda;
+- Aplicar na conta AWS
 
-Pontos Negativos:
-  - Por algum motivos, alguns endpoint mudam de region;
-  - SNS não envia email para subscrição; Usei um SQS para validar
+# Sobre A POC
 
+Para validar uso do localstack, foi proposto o desenvolvimento de uma aplicação bastante simples.
 
-Durante o desenvolvimento, ficou muito fácil limpar todo o ambiente e começar novamente.
+![arquitetura](img/arquitetura.png)
 
-# PoC usando o localstack
+O usuário através do FrontEnd  cadastra um produto que deseja comprar e o preço desejado. Mediante a essa informação, é realizada uma pesquisa diária do produto no site do  `mercado livro` e registra os melhores preços.
+
+Assim que obter o preço desejado, o produto é comprado (simulação de compra).
+
+Para o desenvolvimento vamos utilizar os seguintes recursos AWS:
+
+* `S3`: Hospedagem do FrontEnd do site;
+
+* `Lambda`: Para scrapy no `Mercado Livre`;
+
+* `Dynamodb`: Persistir o histórico de preços;
+
+* `SQS`: Fila para acionar o lambda;
+
+* `SNS`: Envio do reporte; 
+
+* `Cloudwatch Events`: schedule para lambda;
+
+* `Parameter Store`: Armazena ARN do SQS e SNS.
+
+ 
+# Pontos Positivos e Negativos observados durante a POC
+
+Durante o desenvolvimento do projeto foram obtidas algumas percepções que foram registradas como pontos positivos e negativos no uso do localstack.
+
+ > Visão Geral: O desenvolvimento integrado com as ferramentas AWS/localstack aconteceu naturalmente utilizando o localstack, da mesma forma que utilizando API AWS.
+
+## Pontos Positivos:
+
+  * Reset do ambiente assim que necessário, apenas reiniciar o container;
+  * Chamadas usando o `AWS CLI` e SDK AWS;
+  * Funcionalidades similares ao produto AWS;
+  * Validar o programa chamado os Endpoint antes de fazer o deploy da lambda;
+
+## Pontos Negativos:
+  * Alguns EndPoint aparecem em region diferente;
+  * SNS não envia e-mail para subscrição; Usei um SQS para validar;
+  *Ter que manipular EndPoint local e AWS;
+
+# Desenvolvimento da POC
 
 Para experimentar esse modelo, vamos propor o desenvolvimento de uma aplicação com os recursos AWS.
 
-Aplicação é bastante simples, basicamente monitora o preço de um produto no site do Mercado Livre e após ficar abaixo de uma valor simula a compra.
-
-![arquitetura](img/arquitetura.png)
+Aplicação é bastante simples, basicamente monitora o preço de um produto no site do `Mercado Livre` e após ficar abaixo de uma valor desejado, simula  a compra.
 
 O usuário acessa uma url e cadastra o nome do produto e o preço desejado. Recebe diariamente um reporte dos melhores preços.
 
 Os recursos da AWS que serão utilizados:
 
-* `S3`: Hospedagem do frontend do site e para armazenar a imagem do produto;
-* `Lambda`: Para scrapy no mercado livre e OLX e montagem do email;
-* `Dynamodb`: Persistir o histórico de preços;
-* `SQS`: Fila para acionar o lambda;
-* `SNS`: Envio do reporte; e
+* **`S3`:** Hospedagem do frontend do site e para armazenar a imagem do produto;
+
+* **`Lambda`:** Para scrapy no Mercado Livre;
+
+* **`Dynamodb`:** Persistir o histórico de preços;
+
+* **`SQS`:** Fila para acionar o lambda;
+
+* **`SNS`:** Envio do reporte; e
+
 * `Cloudwatch`: schedule para lambda.
 
-Vamos seguir o seguinte fluxo de desenvolvimento.
-
-## Desenvolvimento local usando o LocalStack como SandBox
+## Preparando o ambiente para Desenvolvimento
 
 No computador local, usando o `Docker` inicializamos o `LocalStack` com o seguinte comando.
 
 ```bash
+
 $ docker run -it  -p 4567-4599:4567-4599 -p 8080:8080 localstack/localstack
+
 ```
 
 para facilitar a chamada dos EndPoint, criamos as seguintes variáveis de ambiente dos recursos que vamos utilizar durante o projeto.
 
+ 
+
 ```bash
+
 # EndPoint do S3
 export s3=http://localhost:4572
 
@@ -117,12 +162,14 @@ Para instalar vamos usar o seguinte comando:
 
 ```bash
 $ pip install awscli
+
 ```
 
 E para configurar vamos executar o comando `configure` e nos campos `ACCESS KEY` e `SECRET ACCESS KEY` pode preencher com qualquer conteúdo. Não vamos usar essas chaves.
-
+ 
 
 ```bash
+
 $ aws configure
      AWS Access Key ID [None]: xxxxxx
      AWS Secret Access Key [None]: xxxxxx
@@ -130,40 +177,37 @@ $ aws configure
      Default output format [None]: json
 ```
 
-
 ## FrontEnd - S3
 
-Vamos começar o desenvolvimento com o frontend em html e Javascript que vai ficar hospedado no `S3`. O site está no diretório chamado frontend.
+ Vamos começar o desenvolvimento com o FrontEnd em `html` e `Javascript` que vai ficar hospedado no `S3`. O site está no diretório chamado `frontend`.
 
-Para validar localmente o desenvolvimento do site, vamos criar um `Bucket` e subir o conteúdo do site. Neste primeiro momento, vamos criar usando os comandos do `AWS CLI`, mais futuramente vamos criar o `CloudFormation` com toda a infraestrutura necessária.
+Para validar localmente o desenvolvimento do site, criamos um `Bucket` e fizemos o upload do código do. Neste primeiro momento, vamos criar usando os comandos do `AWS CLI`, mais futuramente vamos criar o `CloudFormation` com toda a infraestrutura necessária.
 
 Criando o Bucket com o nome `frontend`:
 
-```
+```bash
 $ aws --endpoint-url=$s3 s3 mb s3://frontend
 ```
 
 Vamos definir que esse site vai receber conteúdo de website:
 
-```
+```bash
 $ aws --endpoint-url=$s3 s3 website s3://frontend --index-document index.html --error-document error.html
 ```
-
 E para finalizar vamos copiar os arquivos do site para o bucket:
 
-```
+```bash
 $ aws --endpoint-url=$s3 s3 cp .  s3://frontend/  --acl public-read --recursive
 ```
-
-Vamos validar esse primeiro passo acessando o frontend..
-
+Vamos validar esse primeiro passo acessando o site de frontend.
 
 http://localhost:4572/frontend/index.html
 
 
 ![FrontEnd](img/frontend.png)
 
-Os comandos acima foram sintetizados no script ![create_s3_site.sh](scripts/create_s3_sites.sh). 
+Os comandos acima foram sintetizados no script [create_s3_site.sh](scripts/create_s3_sites.sh).
+
 
 ## DynamoDB
 
@@ -173,7 +217,7 @@ A primeira tabela vamos chamar de `produtos`. Essa tabela vai receber o `input` 
 
 Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar o `CloudFormation` para deploy na AWS.
 
-```
+```bash
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
       --attribute-definitions AttributeName=email,AttributeType=S AttributeName=produto,AttributeType=S \
       --key-schema AttributeName=email,KeyType=HASH AttributeName=produto,KeyType=RANGE \
@@ -183,22 +227,22 @@ $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
 A segunda tabela vamos chamar de `infos`. Essa tabela terá ligação com a primeira tabela através do `email`, e vamos armazenar os links pesquisados e informações sobre o produto.
 
 
-```
+```bash
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name infos  \
       --attribute-definitions AttributeName=email,AttributeType=S AttributeName=url,AttributeType=S  \
       --key-schema AttributeName=email,KeyType=HASH AttributeName=url,KeyType=RANGE  \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 ```
 
-Os comandos acima foram sintetizados no script ![create_table_dynamodb.sh](scripts/create_table_dynamodb.sh). 
+Os comandos acima foram sintetizados no script [create_table_dynamodb.sh](scripts/create_table_dynamodb.sh).
 
 ## Lambda
 
-Para popular a segunda tabela vamos desenvolver um função `lambda` que raspa os dados do Mercado Livre e salva no Dynamodb. 
+Para popular a segunda tabela vamos desenvolver uma função `lambda` que raspa os dados do Mercado Livre e salva no Dynamodb.
+ 
+Esse primeiro `lambda` só busca as URL dos produtos.
 
-Esse primeiro `lambda` só busca as URL dos produtos. 
-
-> Em uma aplicação real, as URL pesquisadas deveriam ser aprovadas pelo usuário. Não faremos isso.
+ > Em uma aplicação real, as URL pesquisadas deveriam ser aprovadas pelo usuário. Não faremos isso.
 
 No diretório `lambda_busca_prod` temos toda a estrutura do função `lambda`, não vou entrar em detalhes da programação. Mais estamos usando `python` com `boto3`.
 
@@ -206,32 +250,36 @@ Para fazer o deploy da função `lambda` vamos criar um pacote com todos as depe
 
 Vamos seguir o seguintes passos:
 
-> Para deploy na AWS vamos utilizar uma pipeline.
+Para deploy na AWS vamos utilizar uma pipeline.
 
 1. Crie o diretório package:
-  ```
-  $ mkdir package
-  ```
 
-2. Instale todos as dependência utilizada:
-  ```
-  $ pip install --targget ./package -r requirements.txt
-  ```
+```bash
+$ mkdir package
+```
+ 
+2. Instale todos as dependências utilizadas:
+
+```bash
+$ pip install --targget ./package -r requirements.txt
+```
 
 3. Copie o programa para o diretório package:
-  ```
-  cp busca_produto.py package/
-  ```
+
+```bash
+$ cp busca_produto.py package/
+```
 
 4. Crie o pacote com o zip:
-  ```
-  $ zip -r9 function.zip package/.
-  ```
+
+```bash
+$ zip -r9 function.zip package/.
+```
 
 Agora podemos realizar o deploy do `lambda` utilizando o `AWS CLI`.
 
-```
-aws --endpoint-url=$lambda lambda create-function --function-name busca_produto --zip-file fileb://function.zip --handler busca_produto.handler --runtime python3.7 --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+```bash
+$ aws --endpoint-url=$lambda lambda create-function --function-name busca_produto --zip-file fileb://function.zip --handler busca_produto.handler --runtime python3.7 --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
 
 {
     "FunctionName": "busca_produto",
@@ -252,82 +300,122 @@ aws --endpoint-url=$lambda lambda create-function --function-name busca_produto 
 }
 ```
 
-Com o deploy realizada da função `lambda` podemos realizar uma chamada para executação e certificar que a `lambda` funciona corretamente.
+Com o deploy realizada da função `lambda` podemos realizar uma chamada para executar e certificar que a `lambda` funciona corretamente.
 
-```
+
+```bash
 $ aws --endpoint-url=$lambda lambda invoke --function-name busca_produto --payload '{}' saida.txt
 ```
 
-Após a execução da `lambda`podemos olhar no `dynamodb` e certificar que os dados foram gravados corretamente.
+Após a execução da `lambda` podemos olhar no `dynamodb` e certificar que os dados foram gravados corretamente.
 
-```
+```bash
 $ aws --endpoint-url=$dynamodb dynamodb scan --table-name produtos  --return-consumed-capacity TOTAL
 $ aws --endpoint-url=$dynamodb dynamodb scan --table-name infos  --return-consumed-capacity TOTAL
 ```
 
-Agora vamos criar uma segunda função em `lambda` que vai pegar as urls cadastradas e obter as informaçãoes como preço do produto.
+Agora vamos criar uma segunda função em `lambda` que vai pegar as urls cadastradas e obter as informações como preço do produto.
 
 Essa função em `lamdba` vai seguir as seguintes etapas:
 
-1. Obter a lista ativos na tabela `produtos` do dynamodb;
-2. Obter as urls ativas na tabela `infos`;
-3. Obter as informações do produto;
-4. Gravar na tabela info as informações obtidas;
-5. Atualizar a tabela `produto` com o preço min e max.
+- 1. Obter a lista ativos na tabela `produtos` do dynamodb;
+- 2. Obter as urls ativas na tabela `infos`;
+- 3. Obter as informações do produto;
+- 4. Gravar na tabela info as informações obtidas;
+- 5. Atualizar a tabela `produto` com o preço min e max.
 
 Essa lambda está no diretório `lambda_getinfo`, utilizamos o mesmo procedimento da primeira `lambda` para realizar o deploy.
 
-A terceira função `lambda` gera um relatório com os preços dos produtos. Essa função `lambda` esta no diretório  `lambda_report`.
+A terceira função `lambda` gera um relatório com os preços dos produtos. Essa função `lambda` está no diretório  `lambda_report`.
 
-E a ultima função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório `lambda_report`.
+E a última função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório `lambda_report`.
 
-Nessa fase realizamos o deploy de todas as funções `lambda`. No diretório `script/deploy_lambda_local.sh` estão todos os comandos utilizados.
+ Nessa fase realizamos o deploy de todas as funções `lambda`. No diretório `script/deploy_lambda_local.sh` estão todos os comandos utilizados.
 
 Utilizando o AWS CLI, podemos listar todos:
 
 ```bash
 $ aws --endpoint-url=$lambda lambda list-functions
 ```
+$ aws --endpoint-url=http://localhost:4575  sns create-topic --name notificacao-compra
+$ aws --endpoint-url=http://localhost:4575 sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:notificacao-compra --protocol email --notification-endpoint clodonil@nisled.org
 
+ 
 
-aws --endpoint-url=http://localhost:4575  sns create-topic --name notificacao-compra
-aws --endpoint-url=http://localhost:4575 sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:notificacao-compra --protocol email --notification-endpoint clodonil@nisled.org
-
+ 
 
 # CloudWatch Event
 
+ 
 
-# Envindo relatório de itens pesquisados e valores
+ 
 
+# Enviando relatório de itens pesquisados e valores
+
+ 
+
+ 
 
 aws --endpoint-url=$events events put-rule --name 'DailyRuleReport' --schedule-expression 'rate(1 day)'
 
+ 
+
 aws --endpoint-url=$lambda lambda add-permission --function-name report --statement-id StartReport --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/DailyRuleReport
+
+ 
 
 aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
 
+ 
+
 # Buscando informações sobre os produtos
 
+ 
+
+ 
 
 aws --endpoint-url=$events events put-rule --name 'ScrapyInfoProduto' --schedule-expression 'rate(1 day)'
 
+ 
+
 aws --endpoint-url=$lambda lambda add-permission --function-name getinfo --statement-id StartScrapyInfoProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyInfoProduto
+
+ 
 
 aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
 
+ 
+
+ 
 
 # Lambda trigger pelo Dynamodb
 
+ 
+
+ 
 
 aws --endpoint-url=$events events put-rule --name 'ScrapyProduto1' --schedule-expression 'rate(1 minutes)'
 
+ 
+
 aws --endpoint-url=$lambda lambda add-permission --function-name busca_produto --statement-id StartScrapyProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyProduto1
+
+ 
 
 aws --endpoint-url=$events events put-targets --rule ScrapyProduto1 --targets '{"Id" : "2", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:busca_produto"}'
 
+ 
+
+ 
 
 # SQS e SNS
 
+ 
+
+ 
 
 aws --endpoint-url=$sns sns create-topic --name reports
+
 aws --endpoint-url=$sqs sqs create-queue --queue-name fila-de-compra
+
+ 
