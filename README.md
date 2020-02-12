@@ -186,7 +186,7 @@ http://localhost:4572/frontend/index.html
 
 ![FrontEnd](img/frontend.png)
 
-Os comandos acima foram sintetizados no script [create_s3_site.sh](scripts/create_s3_sites.sh).
+Os comandos acima foram sintetizados no script [create_s3_site.sh](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/create_s3_site.sh).
 
 
 ## DynamoDB
@@ -214,7 +214,7 @@ $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name infos  \
       --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 ```
 
-Os comandos acima foram sintetizados no script [create_table_dynamodb.sh](scripts/create_table_dynamodb.sh).
+Os comandos acima foram sintetizados no script [create_table_dynamodb.sh](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/create_table_dynamodb.sh).
 
 ## Lambda
 
@@ -224,7 +224,7 @@ Esse primeiro `lambda` só busca as URL dos produtos.
 
  > Em uma aplicação real, as URL pesquisadas deveriam ser aprovadas pelo usuário. Não faremos isso.
 
-No diretório `lambda_busca_prod` temos toda a estrutura do função `lambda`, não vou entrar em detalhes da programação. Mais estamos usando `python` com `boto3`.
+No diretório [`lambda_busca_prod`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_busca_prod/busca_produto.py) temos toda a estrutura do função `lambda`, não vou entrar em detalhes da programação. Mais estamos usando `python` com `boto3`.
 
 Para fazer o deploy da função `lambda` vamos criar um pacote com todos as dependências.
 
@@ -309,13 +309,13 @@ Essa função em `lamdba` vai seguir as seguintes etapas:
 * Gravar na tabela info as informações obtidas;
 * Atualizar a tabela `produto` com o preço min e max.
 
-Essa lambda está no diretório `lambda_getinfo`, utilizamos o mesmo procedimento da primeira `lambda` para realizar o deploy.
+Essa lambda está no diretório [`lambda_getinfo`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_getinfo/getinfo.py), utilizamos o mesmo procedimento da primeira `lambda` para realizar o deploy.
 
-A terceira função `lambda` gera um relatório com os preços dos produtos. Essa função `lambda` está no diretório  `lambda_report`.
+A terceira função `lambda` gera um relatório com os preços dos produtos. Essa função `lambda` está no diretório  [`lambda_report`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_report/report.py).
 
-E a última função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório `lambda_report`.
+E a última função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório [`lambda_comprar`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_comprar/comprar.py).
 
- Nessa fase realizamos o deploy de todas as funções `lambda`. No arquivo [`deploy_lambda_local.sh`](script/deploy_lambda_local.sh] estão todos os comandos utilizados.
+ Nessa fase realizamos o deploy de todas as funções `lambda`. No arquivo [`deploy_lambda_local.sh`](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/deploy_lambda_local.sh) estão todos os comandos utilizados.
 
 Utilizando o `AWS CLI`, podemos listar todas as `lambdas` provisionadas localmente:
 
@@ -340,7 +340,7 @@ A comunicação entre a `lambda` info que busca os melhores preços e a `lambda`
 $ aws --endpoint-url=$sqs sqs create-queue --queue-name fila-de-compra
 ```
 
-O script que cria o [`create_sqs_sns.sh`](scripts/create_sqs_sns.sh).
+O script que cria o [`create_sqs_sns.sh`](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/create_sqs_sns.sh).
 
 # CloudWatch Event
 
@@ -373,11 +373,14 @@ $ aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto \
       --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
 ```
 
+
+[create_cloudwatch_event.sh](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/create_cloudwatch_event.sh)
+
 # Deploy Local
 
 Toos os scripts utilizados são chamado pelo arquivo `deploy.sh` que provisiona todo o ambiente de forma rápida. 
 
-![deploy](img/deploy.png)
+![deploy](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/deploy.sh)
 
 Através de um dashboard simples, é possível acompanhar o provisionamento dos recursos:
 
