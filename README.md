@@ -1,56 +1,49 @@
 # Desenvolvendo para AWS usando SandBox Local
 
- É muito comum nas empresas que adotam a cloud pública como AWS, pensarem em modelo para disponibilizarem aos desenvolveres para testarem e homologarem as aplicações.
+É muito comum nas empresas que adotam a cloud pública como AWS, pensarem em modelo para disponibilizarem recursos aos desenvolveres para aprendizado ou testes.
 
-Algumas empresas utilizam como estratégia disponibiliza a mesmo conta produtiva para teste e homologação , separando os ambientes por VPCs ou Clusters.
+Algumas empresas utilizam como estratégia disponibilizar a mesmo conta produtiva para testes, separando os ambientes por VPCs ou Clusters.
 
-Esse ambiente em constante mudança tende a degradar, e com o passar do tempo a segregação dos ambientes não são respeitados. Esse modelo traz grandes ricos de desastre.
+Esse ambiente em constante mudança tende a degradar, e com o passar do tempo a segregação dos ambientes não são respeitados, gerando grande risco de desastre.
 
 Outras empresas liberaram uma nova conta AWS como SandBox. Aparentemente é uma boa ideia, entretanto alguns riscos estão envolvidos nesse processo.
 
 Tais como:
 
-* Apesar da conta ser usado para SandBox, é uma conta normal na AWS, portanto pode surgir `shadow IT`, tornando o ambiente de SandBox em ambiente produtivo; Esse risco é maior quando não é usado infraestrutura como código.
+* Apesar da conta ser usado para SandBox, é uma conta normal na AWS, podendo ser usado como `shadow IT`; tornando o ambiente de SandBox em ambiente produtivo; Esse risco é maior quando não é usado infraestrutura como código.
 
-* Qualquer recurso instanciado é cobrado, Existe o risco de perder o controle do custo da conta; Uma chave de acesso vazada pode causar prejuízos enormes.
+* Qualquer recurso instanciado é cobrado; Existe o risco de perder o controle do custo da conta; Uma chave de acesso vazada pode causar prejuízos enormes.
 
-*  Risco de usar dados produtivos no ambiente de SandBox.
+* Risco de usar dados produtivos no ambiente de SandBox.
 
-Outra possibilidade é o desenvolver trabalhar localmente e construir a infraestrutura como código interagindo diretamente com as API do provider `mocado` localmente.
+Trazemos uma terceira possibilidade, que o desenvolvedor trabalhe localmente e construir a infraestrutura como código interagindo diretamente com as API do provider `mocado`. Para ganhar agilidade no desenvolvimento, toda a construção é realizada no computador do desenvolvedor.
 
-Para ganhar agilidade no desenvolvimento, toda a construção é realizada localmente, isso é, na máquina do desenvolvedor.
-
-Neste caso, não existe uma conta AWS e muito menos uma console AWS. Considerando que uma adoção de Cloud Pública envolve também adotar metodologias como Infraestrutura como código, não faz muito sentido liberar a console AWS para os desenvolvedores.
+Neste caso, não existe uma conta AWS e muito menos uma console AWS. Considerando que uma adoção de cloud pública envolve também adotar metodologias como infraestrutura como código, não faz muito sentido liberar a console AWS para os desenvolvedores.
 
 O computador local do desenvolver é o seu SandBox. Ele pode construir e destruir o ambiente quantas vezes forem necessários, sem afetar outros projetos e sem custos.
 
-Dessa forma os desenvolvedores passam a conhecer os recursos principais da AWS através de chamadas de API local e escrever a infraestrutura em código utilizando Terraform ou Cloudformation.
+Dessa forma os desenvolvedores passam a conhecer os recursos principais da AWS através de chamadas de API local e escrever a infraestrutura em código utilizando `Terraform` ou `Cloudformation`.
 
 Validado localmente aplicação, a solução completa que envolve código e infraestrutura podem ser enviada para AWS e realizada o `deploy` através de uma pipeline.
 
-Para validar localmente, vamos utilizar o localstack. Se você não conhece o localstack, preparei um tutorial com os principais recursos.
+Para validar localmente, vamos utilizar o `localstack`. Se você não conhece o `localstack`, preparei um tutorial com os principais recursos.
 
-O localstack instância localmente os principais serviços AWS, possibilitando assim a criação de um SandBox local para desenvolvimento e aprendizagem.
+O `localstack` instância localmente os principais serviços AWS, possibilitando assim a criação de um SandBox local para desenvolvimento e aprendizagem. O `localstack` utiliza a mesma interface de API que são utilizados nos recursos AWS. O desenvolvedor não tem nenhum prejuízo.
 
-Dessa forma o desenvolvedor constrói toda a infra localmente e desenvolve local realizando as chamadas para as API do localstack. Nesse momento não é necessário nenhuma conta da AWS. Tudo é realizado localmente.
-
-O localstack utiliza a mesma interface de API que são utilizados nos recursos AWS. O desenvolvedor não tem nenhum prejuízo.
+O ciclo de desenvolvimento proposto é>
 
 Após ter uma versão estável, o código é submetido ao git, que inicia a pipeline.
 
 A pipeline vai realizar as seguintes etapas:
 
 - Realizar o build da app;
+- Validar o cloudformation criado;
+- Validar o teste de integração usando o localstack;
+- Realiza o deploy na AWS,
 
-- Validar o cloudformation criado
+# Validação do localstack
 
-- Validar o teste de integração usando o localstack
-
-- Aplicar na conta AWS
-
-# Sobre A POC
-
-Para validar uso do localstack, foi proposto o desenvolvimento de uma aplicação bastante simples.
+Para validar uso do localstack como SandBox, foi proposto o desenvolvimento de uma aplicação bastante simples.
 
 ![arquitetura](img/arquitetura.png)
 
@@ -60,24 +53,18 @@ Assim que obter o preço desejado, o produto é comprado (simulação de compra)
 
 Para o desenvolvimento vamos utilizar os seguintes recursos AWS:
 
-* `S3`: Hospedagem do FrontEnd do site;
-
-* `Lambda`: Para scrapy no `Mercado Livre`;
-
-* `Dynamodb`: Persistir o histórico de preços;
-
-* `SQS`: Fila para acionar o lambda;
-
-* `SNS`: Envio do reporte; 
-
-* `Cloudwatch Events`: schedule para lambda;
-
-* `Parameter Store`: Armazena ARN do SQS e SNS.
+* **`S3`:** Hospedagem do FrontEnd do site;
+* **`Lambda`:** Para scrapy no `Mercado Livre`;
+* **`Dynamodb`:** Persistir o histórico de preços;
+* **`SQS`:** Fila para acionar o lambda;
+* **`SNS`:** Envio do reporte; 
+* **`Cloudwatch Events`:** schedule para lambda;
+* **`Parameter Store`:** Armazena ARN do SQS e SNS.
 
  
-# Pontos Positivos e Negativos observados durante a POC
+# Pontos Positivos e Negativos observados durante o desenvolvimento
 
-Durante o desenvolvimento do projeto foram obtidas algumas percepções que foram registradas como pontos positivos e negativos no uso do localstack.
+Durante o desenvolvimento do projeto foram obtidas algumas percepções que foram registradas como pontos positivos e negativos no uso do `localstack`.
 
  > Visão Geral: O desenvolvimento integrado com as ferramentas AWS/localstack aconteceu naturalmente utilizando o localstack, da mesma forma que utilizando API AWS.
 
@@ -89,48 +76,40 @@ Durante o desenvolvimento do projeto foram obtidas algumas percepções que fora
   * Validar o programa chamado os Endpoint antes de fazer o deploy da lambda;
 
 ## Pontos Negativos:
-  * Alguns EndPoint aparecem em region diferente;
-  * SNS não envia e-mail para subscrição; Usei um SQS para validar;
-  *Ter que manipular EndPoint local e AWS;
 
-# Desenvolvimento da POC
+  * Alguns EndPoint aparecem em região diferente;
+  * SNS não envia e-mail externo para subscrição; Usei um SQS para validar;
+  * Ter que manipular EndPoint local e AWS;
+
+# Desenvolvimento
 
 Para experimentar esse modelo, vamos propor o desenvolvimento de uma aplicação com os recursos AWS.
 
-Aplicação é bastante simples, basicamente monitora o preço de um produto no site do `Mercado Livre` e após ficar abaixo de uma valor desejado, simula  a compra.
+Aplicação é bastante simples, basicamente monitora o preço de um produto no site do `Mercado Livre` e após ficar abaixo de uma valor desejado, simula a compra.
 
 O usuário acessa uma url e cadastra o nome do produto e o preço desejado. Recebe diariamente um reporte dos melhores preços.
 
 Os recursos da AWS que serão utilizados:
 
-* **`S3`:** Hospedagem do frontend do site e para armazenar a imagem do produto;
-
-* **`Lambda`:** Para scrapy no Mercado Livre;
-
+* **`S3`:** Hospedagem do FrontEnd do site;
+* **`Lambda`:** Para scrapy no `Mercado Livre`;
 * **`Dynamodb`:** Persistir o histórico de preços;
-
 * **`SQS`:** Fila para acionar o lambda;
-
-* **`SNS`:** Envio do reporte; e
-
-* `Cloudwatch`: schedule para lambda.
+* **`SNS`:** Envio do reporte; 
+* **`Cloudwatch Events`:** schedule para lambda;
+* **`Parameter Store`:** Armazena ARN do SQS e SNS.
 
 ## Preparando o ambiente para Desenvolvimento
 
-No computador local, usando o `Docker` inicializamos o `LocalStack` com o seguinte comando.
+No computador local, usando o `Docker` inicializamos o `localStack` com o seguinte comando.
 
 ```bash
-
 $ docker run -it  -p 4567-4599:4567-4599 -p 8080:8080 localstack/localstack
-
 ```
 
-para facilitar a chamada dos EndPoint, criamos as seguintes variáveis de ambiente dos recursos que vamos utilizar durante o projeto.
-
- 
+Para facilitar a chamada dos EndPoint, criamos as seguintes variáveis de ambiente dos recursos que vamos utilizar durante o projeto.
 
 ```bash
-
 # EndPoint do S3
 export s3=http://localhost:4572
 
