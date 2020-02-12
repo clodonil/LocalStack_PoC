@@ -30,7 +30,7 @@ Para validar localmente, vamos utilizar o `localstack`. Se você não conhece o 
 
 O `localstack` instância localmente os principais serviços AWS, possibilitando assim a criação de um SandBox local para desenvolvimento e aprendizagem. O `localstack` utiliza a mesma interface de API que são utilizados nos recursos AWS. O desenvolvedor não tem nenhum prejuízo.
 
-O ciclo de desenvolvimento proposto é>
+O ciclo de desenvolvimento proposto é:
 
 Após ter uma versão estável, o código é submetido ao git, que inicia a pipeline.
 
@@ -62,7 +62,7 @@ Para o desenvolvimento vamos utilizar os seguintes recursos AWS:
 * **`Parameter Store`:** Armazena ARN do SQS e SNS.
 
  
-# Pontos Positivos e Negativos observados durante o desenvolvimento
+# Pontos observados durante o desenvolvimento
 
 Durante o desenvolvimento do projeto foram obtidas algumas percepções que foram registradas como pontos positivos e negativos no uso do `localstack`.
 
@@ -255,11 +255,16 @@ $ cp busca_produto.py package/
 $ zip -r9 function.zip package/.
 ```
 
-Agora podemos realizar o deploy do `lambda` utilizando o `AWS CLI`.
+Agora podemos realizar o deploy do `lambda` utilizando o `AWS CLI` localmente.
 
 ```bash
-$ aws --endpoint-url=$lambda lambda create-function --function-name busca_produto --zip-file fileb://function.zip --handler busca_produto.handler --runtime python3.7 --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+$ aws --endpoint-url=$lambda lambda create-function --function-name busca_produto \
+      --zip-file fileb://function.zip --handler busca_produto.handler \
+      --runtime python3.7 --role arn:aws:iam::000000000000:role/roles2-CopyLambdaDeploymentRole-UTTWQYRJH2VQ
+```
+Saída do comando acima:
 
+```
 {
     "FunctionName": "busca_produto",
     "FunctionArn": "arn:aws:lambda:us-east-1:000000000000:function:busca_produto",
@@ -297,11 +302,11 @@ Agora vamos criar uma segunda função em `lambda` que vai pegar as urls cadastr
 
 Essa função em `lamdba` vai seguir as seguintes etapas:
 
-- 1. Obter a lista ativos na tabela `produtos` do dynamodb;
-- 2. Obter as urls ativas na tabela `infos`;
-- 3. Obter as informações do produto;
-- 4. Gravar na tabela info as informações obtidas;
-- 5. Atualizar a tabela `produto` com o preço min e max.
+* Obter a lista dos produtos ativos na tabela `produtos` do dynamodb;
+* Obter as urls ativas na tabela `infos`;
+* Obter as informações do produto no Mercado Livre;
+* Gravar na tabela info as informações obtidas;
+* Atualizar a tabela `produto` com o preço min e max.
 
 Essa lambda está no diretório `lambda_getinfo`, utilizamos o mesmo procedimento da primeira `lambda` para realizar o deploy.
 
@@ -309,92 +314,62 @@ A terceira função `lambda` gera um relatório com os preços dos produtos. Ess
 
 E a última função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório `lambda_report`.
 
- Nessa fase realizamos o deploy de todas as funções `lambda`. No diretório `script/deploy_lambda_local.sh` estão todos os comandos utilizados.
+ Nessa fase realizamos o deploy de todas as funções `lambda`. No arquivo [`deploy_lambda_local.sh`](script/deploy_lambda_local.sh] estão todos os comandos utilizados.
 
-Utilizando o AWS CLI, podemos listar todos:
+Utilizando o `AWS CLI`, podemos listar todas as `lambdas` provisionadas localmente:
 
 ```bash
 $ aws --endpoint-url=$lambda lambda list-functions
+
 ```
-$ aws --endpoint-url=http://localhost:4575  sns create-topic --name notificacao-compra
-$ aws --endpoint-url=http://localhost:4575 sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:notificacao-compra --protocol email --notification-endpoint clodonil@nisled.org
-
- 
-
- 
-
-# CloudWatch Event
-
- 
-
- 
-
-# Enviando relatório de itens pesquisados e valores
-
- 
-
- 
-
-aws --endpoint-url=$events events put-rule --name 'DailyRuleReport' --schedule-expression 'rate(1 day)'
-
- 
-
-aws --endpoint-url=$lambda lambda add-permission --function-name report --statement-id StartReport --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/DailyRuleReport
-
- 
-
-aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
-
- 
-
-# Buscando informações sobre os produtos
-
- 
-
- 
-
-aws --endpoint-url=$events events put-rule --name 'ScrapyInfoProduto' --schedule-expression 'rate(1 day)'
-
- 
-
-aws --endpoint-url=$lambda lambda add-permission --function-name getinfo --statement-id StartScrapyInfoProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyInfoProduto
-
- 
-
-aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
-
- 
-
- 
-
-# Lambda trigger pelo Dynamodb
-
- 
-
- 
-
-aws --endpoint-url=$events events put-rule --name 'ScrapyProduto1' --schedule-expression 'rate(1 minutes)'
-
- 
-
-aws --endpoint-url=$lambda lambda add-permission --function-name busca_produto --statement-id StartScrapyProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyProduto1
-
- 
-
-aws --endpoint-url=$events events put-targets --rule ScrapyProduto1 --targets '{"Id" : "2", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:busca_produto"}'
-
- 
-
- 
 
 # SQS e SNS
 
+Uma vez por dia, é enviado um relatório para o e-mail cadastrado com o produto pesquisado e o menor e maior valor pesquisado. A criação do tópico foi realizado pelo `AWS CLI`.
+
+```bash
+$ aws --endpoint-url=$sns sns create-topic --name reports
+```
+
+A subscrição do e-mail ao tópico é realizado pela `lambda_busca_prod`. 
+
+A comunicação entre a `lambda` info que busca os melhores preços e a `lambda` que realiza a compra do produto, é feita utilizando a lista `SQS`.
+
+```bash
+$ aws --endpoint-url=$sqs sqs create-queue --queue-name fila-de-compra
+```
+
+O script que cria o [`create_sqs_sns.sh`](scripts/create_sqs_sns.sh).
+
+# CloudWatch Event
+
+
+
+
+# Enviando relatório de itens pesquisados e valores
+
+
+```bash
+$ aws --endpoint-url=$events events put-rule --name 'DailyRuleReport' --schedule-expression 'rate(1 day)'
+
+$ aws --endpoint-url=$lambda lambda add-permission --function-name report --statement-id StartReport --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/DailyRuleReport
+
+$ aws --endpoint-url=$events events put-targets --rule DailyRuleReport --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:report"}'
+```
  
+# Buscando informações sobre os produtos
 
  
+```bash
+$ aws --endpoint-url=$events events put-rule --name 'ScrapyInfoProduto' --schedule-expression 'rate(1 day)'
 
-aws --endpoint-url=$sns sns create-topic --name reports
+$ aws --endpoint-url=$lambda lambda add-permission --function-name getinfo --statement-id StartScrapyInfoProduto --action 'lambda:InvokeFunction' --principal events.amazonaws.com --source-arn arn:aws:events:us-west-2:111111111111:rule/ScrapyInfoProduto
 
-aws --endpoint-url=$sqs sqs create-queue --queue-name fila-de-compra
+$ aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto --targets '{"Id" : "1", "Arn": "arn:aws:lambda:us-east-1:000000000000:function:getinfo"}'
+```
 
- 
+# Deploy Local
+
+Toos os scripts utilizados são chamado pelo arquivo `deploy.sh` que provisiona todo o ambiente de forma rápida. 
+
+![deploy](img/deploy.png)

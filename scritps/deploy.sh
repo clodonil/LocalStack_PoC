@@ -5,3 +5,4 @@
 ./create_table_dynamodb.sh
 ./deploy_lambda_local.sh
 ./create_sqs_sns.sh
+./create_cloudwatch_event.sh
