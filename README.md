@@ -224,7 +224,7 @@ Esse primeiro `lambda` só busca as URL dos produtos.
 
  > Em uma aplicação real, as URL pesquisadas deveriam ser aprovadas pelo usuário. Não faremos isso.
 
-No diretório [`lambda_busca_prod`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_busca_prod/busca_produto.py) temos toda a estrutura do função `lambda`, não vou entrar em detalhes da programação. Mais estamos usando `python` com `boto3`.
+No diretório [`lambda_busca_prod`](https://raw.githubusercontent.com/clodonil/LocalStack_PoC/master/lambda_busca_prod/busca_produto.py) temos toda a estrutura do função `lambda`, não vou entrar em detalhes da programação. Mais estamos usando `python` com `boto3`.
 
 Para fazer o deploy da função `lambda` vamos criar um pacote com todos as dependências.
 
@@ -309,11 +309,11 @@ Essa função em `lamdba` vai seguir as seguintes etapas:
 * Gravar na tabela info as informações obtidas;
 * Atualizar a tabela `produto` com o preço min e max.
 
-Essa lambda está no diretório [`lambda_getinfo`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_getinfo/getinfo.py), utilizamos o mesmo procedimento da primeira `lambda` para realizar o deploy.
+Essa lambda está no diretório [`lambda_getinfo`](https://raw.githubusercontent.com/clodonil/LocalStack_PoC/master/lambda_getinfo/getinfo.py), utilizamos o mesmo procedimento da primeira `lambda` para realizar o deploy.
 
-A terceira função `lambda` gera um relatório com os preços dos produtos. Essa função `lambda` está no diretório  [`lambda_report`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_report/report.py).
+A terceira função `lambda` gera um relatório com os preços dos produtos. Essa função `lambda` está no diretório  [`lambda_report`](https://raw.githubusercontent.com/clodonil/LocalStack_PoC/master/lambda_report/report.py).
 
-E a última função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório [`lambda_comprar`](https://github.com/clodonil/LocalStack_PoC/blob/master/lambda_comprar/comprar.py).
+E a última função `lambda` simula a compra do produto se estiver abaixo ou igual ao preço desejado. Essa função está no diretório [`lambda_comprar`](https://raw.githubusercontent.com/clodonil/LocalStack_PoC/master/lambda_comprar/comprar.py).
 
  Nessa fase realizamos o deploy de todas as funções `lambda`. No arquivo [`deploy_lambda_local.sh`](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/deploy_lambda_local.sh) estão todos os comandos utilizados.
 
