@@ -4,7 +4,7 @@
 
 Algumas empresas utilizam como estratégia disponibilizar a mesmo conta produtiva para testes, separando os ambientes por VPCs ou Clusters.
 
-Esse ambiente em constante mudança tende a degradar, e com o passar do tempo a segregação dos ambientes não são respeitados, gerando grande risco de desastre.
+Esse ambiente em constante mudança tende a degradar e, com o passar do tempo, a segregação dos ambientes não é respeitada, gerando grande risco à operação ou ao negócio.
 
 Outras empresas liberaram uma nova conta AWS como SandBox. Aparentemente é uma boa ideia, entretanto alguns riscos estão envolvidos nesse processo.
 
@@ -16,19 +16,19 @@ Tais como:
 
 * Risco de usar dados produtivos no ambiente de SandBox.
 
-Trazemos uma terceira possibilidade, que o desenvolvedor trabalhe localmente e construir a infraestrutura como código interagindo diretamente com as API do provider `mocado`. Para ganhar agilidade no desenvolvimento, toda a construção é realizada no computador do desenvolvedor.
+Aqui, apresentamos uma terceira possibilidade... onde o desenvolvedor trabalha localmente e constrói a infraestrutura como código; interagindo diretamente com as API do provider de forma "mocada". Ganhando agilidade no desenvolvimento e toda a construção é realizada no computador do desenvolvedor.
 
-Neste caso, não existe uma conta AWS e muito menos uma console AWS. Considerando que uma adoção de cloud pública envolve também adotar metodologias como infraestrutura como código, não faz muito sentido liberar a console AWS para os desenvolvedores.
+Neste caso, não existe uma conta AWS e muito menos uma console AWS. Considerando que uma adoção de cloud pública envolve também adotar metodologias como infraestrutura como código, não faz muito sentido liberar a console AWS para os desenvolvedores (exceto para consulta e casos excepcionais).
 
-O computador local do desenvolver é o seu SandBox. Ele pode construir e destruir o ambiente quantas vezes forem necessários, sem afetar outros projetos e sem custos.
+O computador do desenvolver é o seu SandBox. Ele pode construir e destruir o ambiente quantas vezes forem necessárias, sem afetar outros projetos e sem custos.
 
 Dessa forma os desenvolvedores passam a conhecer os recursos principais da AWS através de chamadas de API local e escrever a infraestrutura em código utilizando `Terraform` ou `Cloudformation`.
 
-Validado localmente aplicação, a solução completa que envolve código e infraestrutura podem ser enviada para AWS e realizada o `deploy` através de uma pipeline.
+Após as validações locais, a solução e a sua codificação, pode ser enviada à AWS, bem como, o seu `deploy` via Pipeline.
 
-Para validar localmente, vamos utilizar o `localstack`. Se você não conhece o `localstack`, preparei um tutorial com os principais recursos.
+Para validar localmente, vamos utilizar o `localstack`. Se você não conhece o `localstack`, preparei um [tutorial](https://github.com/clodonil/tutorial_localstack) com os principais recursos.
 
-O `localstack` instância localmente os principais serviços AWS, possibilitando assim a criação de um SandBox local para desenvolvimento e aprendizagem. O `localstack` utiliza a mesma interface de API que são utilizados nos recursos AWS. O desenvolvedor não tem nenhum prejuízo.
+O `localstack` instância (localmente) os principais serviços AWS, possibilitando assim a criação de um SandBox para desenvolvimento e aprendizagem. Ele utiliza a mesma interface de API dos recursos AWS. O desenvolvedor não tem nenhum prejuízo e a experiência no desenvolvimento e a mesma se tivesse interagindo com a AWS.
 
 O ciclo de desenvolvimento proposto é:
 
@@ -41,13 +41,13 @@ A pipeline vai realizar as seguintes etapas:
 - Validar o teste de integração usando o localstack;
 - Realiza o deploy na AWS,
 
-# Validação do localstack
+# Ambiente de Desenvolvimento proposto.
 
 Para validar uso do localstack como SandBox, foi proposto o desenvolvimento de uma aplicação bastante simples.
 
 ![arquitetura](img/arquitetura.png)
 
-O usuário através do FrontEnd  cadastra um produto que deseja comprar e o preço desejado. Mediante a essa informação, é realizada uma pesquisa diária do produto no site do  `mercado livro` e registra os melhores preços.
+O usuário através do FrontEnd  cadastra um produto que deseja comprar e o preço desejado. Mediante a essa informação, é realizada uma pesquisa diária do produto no site do  `Mercado Livre` e registra os melhores preços.
 
 Assim que obter o preço desejado, o produto é comprado (simulação de compra).
 
@@ -66,7 +66,7 @@ Para o desenvolvimento vamos utilizar os seguintes recursos AWS:
 
 Durante o desenvolvimento do projeto foram obtidas algumas percepções que foram registradas como pontos positivos e negativos no uso do `localstack`.
 
- > Visão Geral: O desenvolvimento integrado com as ferramentas AWS/localstack aconteceu naturalmente utilizando o localstack, da mesma forma que utilizando API AWS.
+ > Importante: todo o clico de desenvolvimento ocorreu naturalmente sem adaptações e como se estivesse trabalhando diretamente na AWS. Para os serviços suportados, a “emulação” das APIs é completa.
 
 ## Pontos Positivos:
 
@@ -78,7 +78,7 @@ Durante o desenvolvimento do projeto foram obtidas algumas percepções que fora
 
 ## Pontos Negativos:
 
-  * Alguns EndPoint aparecem em região diferente;
+  * Não existe uma padronização das regiões dos EndPoints;
   * SNS não envia e-mail externo para subscrição; Usei um SQS para validar;
   * Ter que manipular EndPoint local e AWS;
 
@@ -159,9 +159,9 @@ $ aws configure
 
 ## FrontEnd - S3
 
- Vamos começar o desenvolvimento com o FrontEnd em `html` e `Javascript` que vai ficar hospedado no `S3`. O site está no diretório chamado `frontend`.
+Vamos começar o desenvolvimento com o FrontEnd em `html` e `Javascript` que vai ficar hospedado no `S3`. O site está no diretório chamado `frontend`.
 
-Para validar localmente o desenvolvimento do site, criamos um `Bucket` e fizemos o upload do código do. Neste primeiro momento, vamos criar usando os comandos do `AWS CLI`, mais futuramente vamos criar o `CloudFormation` com toda a infraestrutura necessária.
+Para validar localmente o desenvolvimento do site, criamos um `Bucket` e fizemos o upload do código. Neste primeiro momento, vamos criar usando os comandos do `AWS CLI`, mais futuramente vamos criar o `CloudFormation` com toda a infraestrutura necessária.
 
 Criando o Bucket com o nome `frontend`:
 
@@ -195,7 +195,7 @@ Com o site criado, vamos passar para o desenvolvimento das tabelas do DynamoDB e
 
 A primeira tabela vamos chamar de `produtos`. Essa tabela vai receber o `input` realizado pelo site com o nome do produto que vai ser pesquisado e o preço desejado para compra e será complementado com os dados pesquisados.
 
-Nessa fase vamos criar a tabela usando o `AWS CLI`, mais futuramente vamos criar o `CloudFormation` para deploy na AWS.
+Nessa fase, vamos criar a tabela usando o `AWS CLI`, em um segundo momento vamos utilizar o `CloudFormation` para subir a Infra.
 
 ```bash
 $ aws --endpoint-url=$dynamodb dynamodb create-table --table-name produtos  \
@@ -218,13 +218,14 @@ Os comandos acima foram sintetizados no script [create_table_dynamodb.sh](https:
 
 ## Lambda
 
-Para popular a segunda tabela vamos desenvolver uma função `lambda` que raspa os dados do Mercado Livre e salva no Dynamodb.
+Para popular a segunda tabela vamos desenvolver uma função `lambda` que captura os dados do `Mercado Livre` e salva no `Dynamodb`.
  
 Esse primeiro `lambda` só busca as URL dos produtos.
 
  > Em uma aplicação real, as URL pesquisadas deveriam ser aprovadas pelo usuário. Não faremos isso.
 
-No diretório [`lambda_busca_prod`](https://raw.githubusercontent.com/clodonil/LocalStack_PoC/master/lambda_busca_prod/busca_produto.py) temos toda a estrutura do função `lambda`, não vou entrar em detalhes da programação. Mais estamos usando `python` com `boto3`.
+
+No diretório [`lambda_busca_prod`](https://raw.githubusercontent.com/clodonil/LocalStack_PoC/master/lambda_busca_prod/busca_produto.py) temos toda a estrutura da função `lambda`, não vou entrar em detalhes de programação aqui, de qualquer forma, o código está em `Python` utilizando o `Boto3`.
 
 Para fazer o deploy da função `lambda` vamos criar um pacote com todos as dependências.
 
@@ -378,9 +379,9 @@ $ aws --endpoint-url=$events events put-targets --rule ScrapyInfoProduto \
 
 # Deploy Local
 
-Toos os scripts utilizados são chamado pelo arquivo `deploy.sh` que provisiona todo o ambiente de forma rápida. 
+Todos os scripts utilizados são chamado pelo arquivo [deploy](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/deploy.sh) que provisiona todo o ambiente de forma rápida. 
 
-![deploy](https://github.com/clodonil/LocalStack_PoC/blob/master/scritps/deploy.sh)
+![deploy](img/deploy.png)
 
 Através de um dashboard simples, é possível acompanhar o provisionamento dos recursos:
 
